@@ -1,0 +1,28 @@
+package org.objectweb.asm;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+class ClassWriter {
+    ClassVisitor(final int api, final @Nullable ClassVisitor cv);
+
+    void visit(int version, int access, String name, @Nullable String signature,
+        @Nullable String superName, String @Nullable [] interfaces);
+
+    void visitSource(@Nullable String source, @Nullable String debug);
+
+    void visitOuterClass(String owner, @Nullable String name, @Nullable String desc);
+
+    @Nullable AnnotationVisitor visitAnnotation(String desc, boolean visible);
+
+    @Nullable AnnotationVisitor visitTypeAnnotation(int typeRef,
+        @Nullable TypePath typePath, String desc, boolean visible);
+
+    void visitInnerClass(String name, @Nullable String outerName,
+        @Nullable String innerName, int access);
+
+    FieldVisitor visitField(int access, String name, String desc,
+        @Nullable String signature, @Nullable Object value);
+
+    MethodVisitor visitMethod(int access, String name, String desc,
+        @Nullable String signature, String @Nullable [] exceptions);
+}
