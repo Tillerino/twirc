@@ -1,0 +1,16 @@
+language: java
+jdk:
+  - oraclejdk8
+
+before_install:
+  - cd twirc-server
+
+# we're not installing anything
+install: true
+
+script:
+  - mvn verify -Dmaven.javadoc.skip=true -B -V
+    
+cache:
+  directories:
+    - $HOME/.m2/repository
