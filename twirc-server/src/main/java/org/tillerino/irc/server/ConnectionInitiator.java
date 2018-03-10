@@ -20,8 +20,7 @@ public class ConnectionInitiator implements Runnable {
 
   private final Logger log;
 
-  public ConnectionInitiator(ServerSocketChannel serverSocket)
-      throws IOException {
+  public ConnectionInitiator(ServerSocketChannel serverSocket) throws IOException {
     super();
     this.serverSocket = serverSocket;
     log = LoggerFactory.getLogger(

@@ -12,7 +12,7 @@ public class PrivateMessageTest extends AbstractServerTest {
     LineSocket userTwo = connect();
     userTwo.write("NICK two", "USER two * * :user two");
     await().until(() -> userTwo.read().contains(" 001 "));
-    
+
     userOne.write("PRIVMSG two :what's up");
     await().until(() -> {
       String line = userTwo.read();

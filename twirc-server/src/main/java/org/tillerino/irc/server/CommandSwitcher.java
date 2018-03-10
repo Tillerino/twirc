@@ -26,8 +26,11 @@ public class CommandSwitcher {
 
   public CommandSwitcher add(Object handler) {
     concat(Stream.of(handler.getClass().getMethods()),
-            Stream.of(handler.getClass().getDeclaredMethods()))
-        .distinct().filter(m -> m.isAnnotationPresent(Handler.class)).forEach(m -> {
+        Stream.of(handler.getClass().getDeclaredMethods())).distinct().forEach(m -> {
+          Handler annotation = m.getAnnotation(Handler.class);
+          if (annotation == null) {
+            return;
+          }
           Constructor<? extends CommandHandler> constructor = compiler.getHandlerConstructor(m);
 
           Object[] args = new Object[constructor.getParameterCount()];
@@ -47,9 +50,10 @@ public class CommandSwitcher {
           }
 
           try {
-            String key = m.getAnnotation(Handler.class).value();
+            String key = annotation.value();
             if (handlers.containsKey(key)) {
-              throw new RuntimeException(format("Duplicate key %s. Already handled by %s.", key, handlers.get(key)));
+              throw new RuntimeException(
+                  format("Duplicate key %s. Already handled by %s.", key, handlers.get(key)));
             }
             handlers.put(key, constructor.newInstance(args));
           } catch (RuntimeException e) {
@@ -61,7 +65,8 @@ public class CommandSwitcher {
     return this;
   }
 
-  @Nullable Response handle(Connection conn, CharSequence line) {
+  @Nullable
+  Response handle(Connection conn, CharSequence line) {
     IrcLineSplitter splitter = new IrcLineSplitter(line);
     CommandHandler handler = handlers.get(splitter.getString());
     if (handler == null) {

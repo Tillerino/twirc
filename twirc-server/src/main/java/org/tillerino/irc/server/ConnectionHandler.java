@@ -23,7 +23,7 @@ public class ConnectionHandler {
 
   private CommandSwitcher loop;
 
-  public  static class Handshake {
+  public static class Handshake {
     private final Users users;
 
     public Handshake(Users users) {
@@ -32,24 +32,24 @@ public class ConnectionHandler {
     }
 
     @Handler("PASS")
-    public  Response pass() {
+    public Response pass() {
       return NO_RESPONSE;
     }
 
     @Handler("CAP")
-    public  Response cap() {
+    public Response cap() {
       return NO_RESPONSE;
     }
 
     @Handler("NICK")
-    public  Response nick(Connection connection, String nick) {
+    public Response nick(Connection connection, String nick) {
       connection.setNick(nick);
       connection.setUserPrefix(nick + "!" + connection.getServerPrefix());
       return NO_RESPONSE;
     }
 
     @Handler("USER")
-    public  Response user(Connection connection) {
+    public Response user(Connection connection) {
       users.registerConnection(connection);
       return WELCOME;
     }
@@ -80,12 +80,12 @@ public class ConnectionHandler {
 
     @Handler("PING")
     public Response ping(Connection conn, String payload) {
-      return (a, i) -> a.colon().token(conn.getServerPrefix())
-          .token("PONG").token(payload);
+      return (a, i) -> a.colon().token(conn.getServerPrefix()).token("PONG").token(payload);
     }
   }
 
-  public ConnectionHandler(Socket socket, Channels channels, Users users, HandlerCompiler compiler) throws IOException {
+  public ConnectionHandler(Socket socket, Channels channels, Users users, HandlerCompiler compiler)
+      throws IOException {
     super();
     log = LoggerFactory.getLogger(
         ConnectionHandler.class.getCanonicalName() + "." + socket.getRemoteSocketAddress());

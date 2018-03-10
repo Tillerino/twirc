@@ -20,12 +20,12 @@ public class FindersTest {
   @Retention(RUNTIME)
   @Target(TYPE_USE)
   @interface SomeQualifier {
-    
+
   }
 
   @FoundBy(SimpleFinder.class)
   public static class SimpleClass {
-    
+
   }
 
   public interface SimpleFinder {
@@ -33,7 +33,8 @@ public class FindersTest {
     SimpleClass finds(String something);
 
     @Finds(SimpleClass.class)
-    @SomeQualifier SimpleClass findsMoreComplicated(String something);
+    @SomeQualifier
+    SimpleClass findsMoreComplicated(String something);
   }
 
   @Test
@@ -47,6 +48,7 @@ public class FindersTest {
   public void testWithTypeUse() throws Exception {
     AnnotatedType type = FindersTest.class.getDeclaredField("notSoSimple").getAnnotatedType();
     assertTrue(finders.isFindable(type));
-    assertEquals(SimpleFinder.class.getMethod("findsMoreComplicated", String.class), finders.get(type));
+    assertEquals(SimpleFinder.class.getMethod("findsMoreComplicated", String.class),
+        finders.get(type));
   }
 }

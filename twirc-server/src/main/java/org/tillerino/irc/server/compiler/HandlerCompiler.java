@@ -1,7 +1,5 @@
 package org.tillerino.irc.server.compiler;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -25,15 +23,13 @@ public class HandlerCompiler {
   @SuppressWarnings("unchecked")
   public Class<? extends CommandHandler> createClass(Method m) {
     byte[] clazz = new CommandHandlerWriter(finders, m).write();
-    // for debugging
-    try (FileOutputStream fos = new FileOutputStream("class.class")) {
-      fos.write(clazz);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    ClassLoader classLoader = m.getDeclaringClass().getClassLoader();
+    if (classLoader == null) {
+      // only the case for primitives and void
+      throw new RuntimeException();
     }
     Class<? extends CommandHandler> loaded = (Class<? extends CommandHandler>) classLoaders
-        .computeIfAbsent(m.getDeclaringClass().getClassLoader(), CommandClassLoader::new)
-        .defineClass(clazz);
+        .computeIfAbsent(classLoader, CommandClassLoader::new).defineClass(clazz);
     return loaded;
   }
 

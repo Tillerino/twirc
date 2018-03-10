@@ -1,9 +1,11 @@
 package org.tillerino.irc.server;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.tillerino.irc.server.compiler.FoundBy;
 import org.tillerino.irc.server.responses.NamesReply;
 import org.tillerino.irc.server.responses.NumericResponse;
@@ -33,7 +35,7 @@ public class Channel {
     return name;
   }
 
-  public Set<String> getNicks() {
+  public Set<@KeyFor("this.connections") String> getNicks() {
     return connections.keySet();
   }
 
@@ -41,7 +43,8 @@ public class Channel {
     connections.values().stream().flatMap(Set::stream).forEach(con -> con.respond(
         (a, i) -> a.colon().token(info.getUserPrefix()).token("JOIN").colon().token(getName())));
     connections.computeIfAbsent(info.getNick(), nick -> new ConcurrentSkipListSet<>()).add(info);
-    return JOIN.andThen(new NamesReply(getNicks(), getName())).andThen(RPL_ENDOFNAMES);
+    return JOIN.andThen(new NamesReply((Collection<String>) getNicks(), getName()))
+        .andThen(RPL_ENDOFNAMES);
   }
 
   public Response sendMessage(CharSequence msg, Connection sender) {

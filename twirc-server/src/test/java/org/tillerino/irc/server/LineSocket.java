@@ -32,8 +32,8 @@ public class LineSocket implements Closeable {
 
   public void write(String... line) {
     try {
-      for (int i = 0; i < line.length; i++) {
-        writer.write(line[i]);
+      for (String element : line) {
+        writer.write(element);
         writer.write('\n');
         writer.flush();
       }

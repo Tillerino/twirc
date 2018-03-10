@@ -77,8 +77,8 @@ public class Utf8LineBufferTest {
     String string = String.valueOf(data);
     System.out.println((int) string.charAt(0));
     byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-    for (int i = 0; i < bytes.length; i++) {
-      System.out.print(Integer.toHexString((bytes[i] + 256) % 256) + " ");
+    for (byte b : bytes) {
+      System.out.print(Integer.toHexString((b + 256) % 256) + " ");
     }
     System.out.println();
     System.out.println(string);

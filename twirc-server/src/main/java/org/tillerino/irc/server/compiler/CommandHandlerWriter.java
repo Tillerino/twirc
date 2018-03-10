@@ -90,14 +90,19 @@ public class CommandHandlerWriter {
       throw new IllegalArgumentException("Handler " + method + " must return " + Response.class);
     }
     isStatic = Modifier.isStatic(method.getModifiers());
-    generatedClassName = getCorrectNestedClassName(method.getDeclaringClass()) + "$" + StringUtils.capitalize(method.getName()) + "Handler";
+    generatedClassName = getCorrectNestedClassName(method.getDeclaringClass()) + "$"
+        + StringUtils.capitalize(method.getName()) + "Handler";
   }
 
   static String getCorrectNestedClassName(Class<?> clazz) {
     if (clazz.getEnclosingClass() != null) {
       return getCorrectNestedClassName(clazz.getEnclosingClass()) + "$" + clazz.getSimpleName();
     }
-    return clazz.getCanonicalName().replace('.', '/');
+    String canonicalName = clazz.getCanonicalName();
+    if (canonicalName == null) {
+      throw new RuntimeException();
+    }
+    return canonicalName.replace('.', '/');
   }
 
   public byte[] write() {
@@ -121,8 +126,8 @@ public class CommandHandlerWriter {
         writeField(cw, finders.get(annotatedType).getDeclaringClass());
       }
       if (annotatedType instanceof AnnotatedParameterizedType) {
-        writeField(cw,
-            finders.get(getListNestedClass((AnnotatedParameterizedType) annotatedType)).getDeclaringClass());
+        writeField(cw, finders.get(getListNestedClass((AnnotatedParameterizedType) annotatedType))
+            .getDeclaringClass());
       }
     }
   }

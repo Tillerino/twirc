@@ -16,8 +16,7 @@ public class Channels {
     if (channelName.length() <= 1 || channelName.charAt(0) != '#') {
       return Response.NO_RESPONSE;
     }
-    return channels.computeIfAbsent(channelName.toString(), name -> new Channel(name))
-        .join(info);
+    return channels.computeIfAbsent(channelName.toString(), name -> new Channel(name)).join(info);
   }
 
   public Response sendMessage(CharSequence channelName, CharSequence msg, Connection info) {
