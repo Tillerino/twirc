@@ -77,20 +77,22 @@ public class CommandHandlerWriter {
   }
 
   private final Finders finders;
+  private final Class<? extends Object> handlerClass;
   private final Method method;
   private final boolean isStatic;
   private final String generatedClassName;
 
   Map<Class<?>, Integer> fieldsIndex = new LinkedHashMap<>();
 
-  public CommandHandlerWriter(Finders finders, Method method) {
+  public CommandHandlerWriter(Finders finders, Class<? extends Object> handlerClass, Method method) {
     this.finders = finders;
+    this.handlerClass = handlerClass;
     this.method = method;
     if (!method.getReturnType().equals(Response.class)) {
       throw new IllegalArgumentException("Handler " + method + " must return " + Response.class);
     }
     isStatic = Modifier.isStatic(method.getModifiers());
-    generatedClassName = getCorrectNestedClassName(method.getDeclaringClass()) + "$"
+    generatedClassName = getCorrectNestedClassName(handlerClass) + "$"
         + StringUtils.capitalize(method.getName()) + "Handler";
   }
 
@@ -118,7 +120,7 @@ public class CommandHandlerWriter {
 
   private void writeFields(ClassWriter cw) {
     if (!isStatic) {
-      writeField(cw, method.getDeclaringClass());
+      writeField(cw, handlerClass);
     }
     for (Parameter parameter : method.getParameters()) {
       AnnotatedType annotatedType = parameter.getAnnotatedType();
@@ -173,7 +175,7 @@ public class CommandHandlerWriter {
         cw.visitMethod(Opcodes.ACC_PUBLIC, "handle", HANDLE_SIGNATURE, null, null);
     visitor.visitCode();
     if (!isStatic) {
-      loadField(visitor, method.getDeclaringClass());
+      loadField(visitor, handlerClass);
     }
     for (Parameter parameter : method.getParameters()) {
       loadParameter(visitor, parameter.getAnnotatedType());

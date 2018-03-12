@@ -15,15 +15,15 @@ public class HandlerCompiler {
   private final Map<Method, Constructor<? extends CommandHandler>> handlerConstructors =
       new LinkedHashMap<>();
 
-  public Constructor<? extends CommandHandler> getHandlerConstructor(Method m) {
+  public Constructor<? extends CommandHandler> getHandlerConstructor(Class<? extends Object> handlerClass, Method m) {
     return handlerConstructors.computeIfAbsent(m,
-        method -> (Constructor<? extends CommandHandler>) createClass(method).getConstructors()[0]);
+        method -> (Constructor<? extends CommandHandler>) createClass(handlerClass, method).getConstructors()[0]);
   }
 
   @SuppressWarnings("unchecked")
-  public Class<? extends CommandHandler> createClass(Method m) {
-    byte[] clazz = new CommandHandlerWriter(finders, m).write();
-    ClassLoader classLoader = m.getDeclaringClass().getClassLoader();
+  public Class<? extends CommandHandler> createClass(Class<? extends Object> handlerClass, Method m) {
+    byte[] clazz = new CommandHandlerWriter(finders, handlerClass, m).write();
+    ClassLoader classLoader = handlerClass.getClassLoader();
     if (classLoader == null) {
       // only the case for primitives and void
       throw new RuntimeException();

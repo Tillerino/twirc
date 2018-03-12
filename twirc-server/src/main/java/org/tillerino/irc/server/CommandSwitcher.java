@@ -25,18 +25,19 @@ public class CommandSwitcher {
   }
 
   public CommandSwitcher add(Object handler) {
-    concat(Stream.of(handler.getClass().getMethods()),
-        Stream.of(handler.getClass().getDeclaredMethods())).distinct().forEach(m -> {
+    Class<? extends Object> handlerClass = handler.getClass();
+    concat(Stream.of(handlerClass.getMethods()),
+        Stream.of(handlerClass.getDeclaredMethods())).distinct().forEach(m -> {
           Handler annotation = m.getAnnotation(Handler.class);
           if (annotation == null) {
             return;
           }
-          Constructor<? extends CommandHandler> constructor = compiler.getHandlerConstructor(m);
+          Constructor<? extends CommandHandler> constructor = compiler.getHandlerConstructor(handlerClass, m);
 
           Object[] args = new Object[constructor.getParameterCount()];
           required: for (int i = 0; i < args.length; i++) {
             Class<?> type = constructor.getParameterTypes()[i];
-            if (type.equals(handler.getClass())) {
+            if (type.isAssignableFrom(handlerClass)) {
               args[i] = handler;
               continue;
             }

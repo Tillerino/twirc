@@ -68,7 +68,7 @@ public class CommandSwitcherTest {
   @Test
   public void testDirect() throws Exception {
     CommandHandler instance = compiler
-        .createClass(Handleru.class.getMethod("handle", Connection.class, List.class))
+        .createClass(Handleru.class, Handleru.class.getMethod("handle", Connection.class, List.class))
         .getConstructor(Handleru.class, SimpleFinder.class).newInstance(handler, finder);
 
     assertNull(handler.users);
@@ -87,7 +87,7 @@ public class CommandSwitcherTest {
   @Test
   public void testInheritance() throws Exception {
     CommandHandler instance = compiler
-        .createClass(ChildClass.class.getMethod("handle"))
+        .createClass(ChildClass.class, ChildClass.class.getMethod("handle"))
         .getConstructor(ChildClass.class).newInstance(new ChildClass());
   }
 }
