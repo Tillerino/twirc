@@ -8,6 +8,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -35,6 +36,8 @@ public class Connection implements Comparable<Connection> {
 
   @Nullable
   ByteBuffer writeBuffer = null;
+
+  boolean closeRequested = false;
 
   public Connection(Socket socket, SelectionKey selectionKey) throws IOException {
     super();
@@ -73,12 +76,18 @@ public class Connection implements Comparable<Connection> {
   }
 
   public void queue(ByteBuffer buffer) {
+    if (closeRequested) {
+      return;
+    }
     if (output.offer(buffer)) {
       selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
   }
 
   public List<CharSequence> read(ReadableByteChannel channel) throws IOException {
+    if (closeRequested) {
+      return Collections.emptyList();
+    }
     return inputBuffer.read(channel);
   }
 
@@ -95,6 +104,9 @@ public class Connection implements Comparable<Connection> {
         }
       } else {
         selectionKey.interestOps(SelectionKey.OP_READ);
+        if (closeRequested) {
+          channel.socket().close();
+        }
         break;
       }
     }
@@ -129,5 +141,9 @@ public class Connection implements Comparable<Connection> {
   @Override
   public int compareTo(Connection o) {
     return o.hashCode() - hashCode();
+  }
+
+  public void close() {
+    closeRequested = true;
   }
 }

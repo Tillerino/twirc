@@ -47,7 +47,7 @@ public class ConnectionHandler {
     }
   }
 
-  public static class Loop {
+  public static class Loop extends BaseHandler {
     private final Users users;
     private final Channels channels;
 
@@ -63,11 +63,6 @@ public class ConnectionHandler {
         return channels.sendMessage(target, message, conn);
       }
       return users.sendMessage(target, message, conn);
-    }
-
-    @Handler("PING")
-    public Response ping(Connection conn, String payload) {
-      return (a, i) -> a.colon().token(conn.getServerPrefix()).token("PONG").token(payload);
     }
 
     @Handler("WHO")
