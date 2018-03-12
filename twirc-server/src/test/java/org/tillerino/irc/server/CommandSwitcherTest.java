@@ -29,6 +29,20 @@ public class CommandSwitcherTest {
     }
   }
 
+  public static class ParentClass {
+    @Handler("BAR")
+    public Response handle() {
+      return Response.NO_RESPONSE;
+    }
+  }
+
+  public static class ChildClass extends ParentClass {
+    @Handler("BAZ")
+    public Response handle2() {
+      return Response.NO_RESPONSE;
+    }
+  }
+
   @Mock
   SimpleFinder finder;
 
@@ -68,5 +82,12 @@ public class CommandSwitcherTest {
     assertNull(handler.users);
     switcher.handle(connection, "FOO b");
     assertEquals(asList(b), handler.users);
+  }
+
+  @Test
+  public void testInheritance() throws Exception {
+    CommandHandler instance = compiler
+        .createClass(ChildClass.class.getMethod("handle"))
+        .getConstructor(ChildClass.class).newInstance(new ChildClass());
   }
 }
