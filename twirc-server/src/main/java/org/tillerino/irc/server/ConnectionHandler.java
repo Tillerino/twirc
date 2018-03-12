@@ -31,7 +31,7 @@ public class ConnectionHandler {
     @Handler("NICK")
     public Response nick(Connection connection, String nick) {
       connection.setNick(nick);
-      connection.setUserPrefix(nick + "!" + connection.getServerPrefix());
+      connection.setUserPrefix(nick + "@" + connection.getServerPrefix());
       return NO_RESPONSE;
     }
 
