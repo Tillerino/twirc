@@ -6,10 +6,10 @@ import org.junit.Test;
 public class PrivateMessageTest extends AbstractServerTest {
   @Test
   public void testDirectMessage() throws Exception {
-    LineSocket userOne = connect();
+    LineSocket userOne = connect(0);
     userOne.write("NICK one", "USER one * * :user one");
     await().until(() -> userOne.read().contains(" 001 "));
-    LineSocket userTwo = connect();
+    LineSocket userTwo = connect(0);
     userTwo.write("NICK two", "USER two * * :user two");
     await().until(() -> userTwo.read().contains(" 001 "));
 

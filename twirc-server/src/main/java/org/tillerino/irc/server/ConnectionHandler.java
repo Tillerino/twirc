@@ -3,6 +3,10 @@ package org.tillerino.irc.server;
 import static org.tillerino.irc.server.Response.NO_RESPONSE;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,29 +15,12 @@ import org.tillerino.irc.server.compiler.HandlerCompiler;
 import org.tillerino.irc.server.responses.NumericResponse;
 
 public class ConnectionHandler {
-  private static final Response WELCOME =
-      NumericResponse.create(1, (a, i) -> a.colon().token("Welcome"));
-
-  private final Logger log;
-
-  final Connection info;
-
-  @Nullable
-  private CommandSwitcher handshake;
-
-  private CommandSwitcher loop;
-
   public static class Handshake {
     private final Users users;
 
     public Handshake(Users users) {
       super();
       this.users = users;
-    }
-
-    @Handler("PASS")
-    public Response pass() {
-      return NO_RESPONSE;
     }
 
     @Handler("CAP")
@@ -45,6 +32,11 @@ public class ConnectionHandler {
     public Response nick(Connection connection, String nick) {
       connection.setNick(nick);
       connection.setUserPrefix(nick + "!" + connection.getServerPrefix());
+      return NO_RESPONSE;
+    }
+
+    @Handler("PASS")
+    public Response pass() {
       return NO_RESPONSE;
     }
 
@@ -66,34 +58,54 @@ public class ConnectionHandler {
     }
 
     @Handler("PRIVMSG")
-    public Response pass(Connection conn, String target, String message) {
+    public Response message(Connection conn, String target, String message) {
       if (target.startsWith("#")) {
-        return channels.sendMessage(target.substring(1), message, conn);
+        return channels.sendMessage(target, message, conn);
       }
       return users.sendMessage(target, message, conn);
-    }
-
-    @Handler("WHO")
-    public Response who(Channel channel) {
-      return channel.who();
     }
 
     @Handler("PING")
     public Response ping(Connection conn, String payload) {
       return (a, i) -> a.colon().token(conn.getServerPrefix()).token("PONG").token(payload);
     }
+
+    @Handler("WHO")
+    public Response who(Channel channel) {
+      return channel.who();
+    }
   }
 
-  public ConnectionHandler(Socket socket, Channels channels, Users users, HandlerCompiler compiler)
+  private static final Response WELCOME =
+      NumericResponse.create(1, (a, i) -> a.colon().token("Welcome"));
+
+  private final Logger log;
+
+  final Connection info;
+
+  public void tryWrite(SocketChannel channel) throws IOException {
+    info.tryWrite(channel);
+  }
+
+  @Nullable
+  private CommandSwitcher handshake;
+
+  private CommandSwitcher loop;
+
+  public ConnectionHandler(Socket socket, Channels channels, Users users, HandlerCompiler compiler, SelectionKey selectionKey)
       throws IOException {
     super();
     log = LoggerFactory.getLogger(
         ConnectionHandler.class.getCanonicalName() + "." + socket.getRemoteSocketAddress());
-    info = new Connection(socket);
+    info = new Connection(socket, selectionKey);
 
     handshake = new CommandSwitcher(compiler).add(new Handshake(users));
 
     loop = new CommandSwitcher(compiler, channels).add(new Loop(users, channels)).add(channels);
+  }
+
+  public List<CharSequence> read(ReadableByteChannel channel) throws IOException {
+    return info.read(channel);
   }
 
   public void handle(CharSequence line) {

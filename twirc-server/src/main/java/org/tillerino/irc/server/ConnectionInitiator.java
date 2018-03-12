@@ -2,18 +2,15 @@ package org.tillerino.irc.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tillerino.irc.server.compiler.HandlerCompiler;
-import org.tillerino.irc.server.util.Utf8LineBuffer;
 
 public class ConnectionInitiator implements Runnable {
   private final ServerSocketChannel serverSocket;
@@ -25,33 +22,6 @@ public class ConnectionInitiator implements Runnable {
     this.serverSocket = serverSocket;
     log = LoggerFactory.getLogger(
         ConnectionInitiator.class.getCanonicalName() + "." + serverSocket.getLocalAddress());
-  }
-
-  private static class ChannelBuffer {
-    final ConnectionHandler handler;
-
-    private ChannelBuffer(ConnectionHandler handler) {
-      super();
-      this.handler = handler;
-    }
-
-    Utf8LineBuffer buffer = new Utf8LineBuffer(511);
-
-    @Nullable
-    ByteBuffer writeBuffer = null;
-
-    void tryWrite(SocketChannel channel) throws IOException {
-      if (writeBuffer == null) {
-        writeBuffer = handler.info.output.poll();
-      }
-      if (writeBuffer != null) {
-        for (; channel.write(writeBuffer) > 0;) {
-        }
-        if (!writeBuffer.hasRemaining()) {
-          writeBuffer = null;
-        }
-      }
-    }
   }
 
   @Override
@@ -69,29 +39,29 @@ public class ConnectionInitiator implements Runnable {
             if (Thread.interrupted()) {
               return;
             }
-            // System.out.println(key);
+//             System.out.println(key);
             if (key.isAcceptable()) {
-              System.out.println("acceptable");
+//              System.out.println("acceptable");
               SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
               channel.configureBlocking(false);
+              SelectionKey newSelectionKey = channel.register(selector, SelectionKey.OP_READ);
               ConnectionHandler handler =
-                  new ConnectionHandler(channel.socket(), channels, users, compiler);
-              channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE,
-                  new ChannelBuffer(handler));
+                  new ConnectionHandler(channel.socket(), channels, users, compiler, newSelectionKey);
+              newSelectionKey.attach(handler);
             }
             if (key.isReadable()) {
-              System.out.println("readable");
+//              System.out.println("readable");
               SocketChannel channel = (SocketChannel) key.channel();
-              ChannelBuffer reader = (ChannelBuffer) key.attachment();
-              List<CharSequence> lines = reader.buffer.read(channel);
+              ConnectionHandler reader = (ConnectionHandler) key.attachment();
+              List<CharSequence> lines = reader.read(channel);
               for (CharSequence line : lines) {
-                reader.handler.handle(line);
+                reader.handle(line);
               }
             }
             if (key.isWritable()) {
-              // System.out.println("writable");
+//              System.out.println("writable");
               SocketChannel channel = (SocketChannel) key.channel();
-              ChannelBuffer writer = (ChannelBuffer) key.attachment();
+              ConnectionHandler writer = (ConnectionHandler) key.attachment();
               writer.tryWrite(channel);
             }
           }

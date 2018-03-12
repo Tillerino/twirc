@@ -10,7 +10,7 @@ import java.net.Socket;
 
 public class LineSocket implements Closeable {
   private final Socket socket;
-  private final BufferedReader reader;
+  private BufferedReader reader;
   private final BufferedWriter writer;
 
   public LineSocket(String host, int port) throws IOException {
@@ -47,6 +47,23 @@ public class LineSocket implements Closeable {
       return reader.readLine();
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public LineSocket writef(String format, Object... args) {
+    write(String.format(format, args));
+    return this;
+  }
+
+  public void consumeLine() {
+    try {
+      for (;;) {
+        if (reader.read() == '\n') {
+          break;
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException();
     }
   }
 }

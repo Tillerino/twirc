@@ -2,7 +2,7 @@ package org.tillerino.irc.server.responses;
 
 import java.util.Collection;
 import org.tillerino.irc.server.Connection;
-import org.tillerino.irc.server.ResponseWriter;
+import org.tillerino.irc.server.util.ResponseWriter;
 
 public class NamesReply extends NumericResponse {
   private final Collection<String> names;

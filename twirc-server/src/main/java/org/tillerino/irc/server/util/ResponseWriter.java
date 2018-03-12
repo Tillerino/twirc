@@ -1,6 +1,7 @@
-package org.tillerino.irc.server;
+package org.tillerino.irc.server.util;
 
 import java.io.IOException;
+import org.tillerino.irc.server.WrappedIoException;
 
 public class ResponseWriter {
   private final Appendable out;
@@ -61,6 +62,7 @@ public class ResponseWriter {
     crlf = false;
     try {
       out.append(c);
+      written++;
     } catch (IOException e) {
       throw new WrappedIoException(e);
     }
@@ -73,6 +75,7 @@ public class ResponseWriter {
     crlf = false;
     try {
       out.append(seq);
+      written += seq.length();
     } catch (IOException e) {
       throw new WrappedIoException(e);
     }

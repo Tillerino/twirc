@@ -2,6 +2,7 @@ package org.tillerino.irc.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.tillerino.irc.server.util.ResponseWriter;
 
 public interface Response {
   void write(ResponseWriter appendable, Connection info);

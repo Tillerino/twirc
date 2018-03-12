@@ -3,7 +3,7 @@ package org.tillerino.irc.server.responses;
 import java.text.DecimalFormat;
 import org.tillerino.irc.server.Connection;
 import org.tillerino.irc.server.Response;
-import org.tillerino.irc.server.ResponseWriter;
+import org.tillerino.irc.server.util.ResponseWriter;
 
 public class NumericResponse implements Response {
   private final String number;

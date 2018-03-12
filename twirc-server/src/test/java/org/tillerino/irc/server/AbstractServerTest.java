@@ -31,9 +31,9 @@ public abstract class AbstractServerTest {
     assertTrue(exec.awaitTermination(1, TimeUnit.SECONDS));
   }
 
-  protected LineSocket connect() {
+  protected LineSocket connect(int port) {
     try {
-      return new LineSocket("localhost", socket.socket().getLocalPort());
+      return new LineSocket("localhost", port != 0 ? port : socket.socket().getLocalPort());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
