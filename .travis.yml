@@ -9,7 +9,7 @@ before_install:
 install: true
 
 script:
-  - mvn verify -Dmaven.javadoc.skip=true -B -V
+  - mvn verify -Dmaven.javadoc.skip=true -Dgpg.skip -B -V
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
