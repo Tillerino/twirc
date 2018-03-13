@@ -80,7 +80,7 @@ public class Connection implements Comparable<Connection> {
       return;
     }
     if (output.offer(buffer)) {
-      selectionKey.interestOps(SelectionKey.OP_WRITE);
+      selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
   }
 
@@ -144,6 +144,9 @@ public class Connection implements Comparable<Connection> {
   }
 
   public void close() {
-    closeRequested = true;
+    if (!closeRequested) {
+      selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+      closeRequested = true;
+    }
   }
 }
